@@ -2,7 +2,7 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 import { cookiesInstance } from './cookies'
 // Create a custom axios instance
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   // Enable cookies to be sent with requests
   // withCredentials: true,
 })
@@ -11,7 +11,7 @@ const axiosInstance: AxiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     // Get token from cookie
-    const token = cookiesInstance.get('token')
+    const token = cookiesInstance.get('access_token')
 
     // If token exists, attach it to the Authorization header
     if (token) {
@@ -44,8 +44,8 @@ axiosInstance.interceptors.response.use(
         // Check if we've already tried to retry this request
         if (error.config._retry) {
           // We've already retried once, don't retry again
-          sessionStorage.removeItem('token')
-          localStorage.removeItem('token')
+          sessionStorage.removeItem('access_token')
+          localStorage.removeItem('access_token')
           return Promise.reject(error)
         }
       }

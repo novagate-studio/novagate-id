@@ -1,9 +1,10 @@
-import { LoginForm } from '@/app/login/components/login-form'
+
+import { SignupForm } from "@/app/register/components/signup-form"
 import Mock from '@/assets/images/mock.jpg'
+
 import Logo from '@/assets/logo/PNG_BLACK.png'
 import Image from 'next/image'
-
-export default function LoginPage() {
+export default function SignupPage() {
   return (
     <div className='grid min-h-svh lg:grid-cols-2'>
       <div className='flex flex-col gap-4 p-6 md:p-10'>
@@ -11,8 +12,8 @@ export default function LoginPage() {
           <Image src={Logo} alt='Novagate Logo' width={150} height={50} className='w-40 h-auto' />
         </div>
         <div className='flex flex-1 items-center justify-center'>
-          <div className='w-full max-w-xs'>
-            <LoginForm />
+          <div className='w-full max-w-md'>
+            <SignupForm />
           </div>
         </div>
       </div>

@@ -1,7 +1,15 @@
-export const login = async (email: string, password: string) => {
-  // Implementation of login service
-}
-
-export const logout = async () => {
-  // Implementation of logout service
+export interface ResponseData<T> {
+  status: boolean
+  message:
+    | 'error'
+    | {
+        en: string
+        vi: string
+      }
+  code: number
+  data: T
+  errors?: {
+    en: string
+    vi: string
+  }
 }
