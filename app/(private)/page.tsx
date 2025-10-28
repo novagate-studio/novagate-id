@@ -1,62 +1,132 @@
-import Image from "next/image";
+'use client'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useUser } from '@/contexts/user-context'
 
 export default function Home() {
-  return (
-    <div className='font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20'>
-      <main className='flex flex-col gap-[32px] row-start-2 items-center sm:items-start'>
-        <Image src='/next.svg' alt='Next.js logo' width={180} height={38} priority />
-        <ol className='font-mono list-inside list-decimal text-sm/6 text-center sm:text-left'>
-          <li className='mb-2 tracking-[-.01em]'>
-            Bắt đầu bằng cách chỉnh sửa{' '}
-            <code className='bg-black/[.05] font-mono font-semibold px-1 py-0.5 rounded'>app/page.tsx</code>.
-          </li>
-          <li className='tracking-[-.01em]'>Lưu và xem thay đổi ngay lập tức.</li>
-        </ol>
+  const { user, loading, error, refreshUser } = useUser()
 
-        <div className='flex gap-4 items-center flex-col sm:flex-row'>
-          <a
-            className='rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto'
-            href='https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-            target='_blank'
-            rel='noopener noreferrer'>
-            <Image src='/vercel.svg' alt='Vercel logomark' width={20} height={20} />
-            Triển khai ngay
-          </a>
-          <a
-            className='rounded-full border border-solid border-black/[.08] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]'
-            href='https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-            target='_blank'
-            rel='noopener noreferrer'>
-            Đọc tài liệu
-          </a>
-        </div>
-      </main>
-      <footer className='row-start-3 flex gap-[24px] flex-wrap items-center justify-center'>
-        <a
-          className='flex items-center gap-2 hover:underline hover:underline-offset-4'
-          href='https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-          target='_blank'
-          rel='noopener noreferrer'>
-          <Image aria-hidden src='/file.svg' alt='File icon' width={16} height={16} />
-          Học tập
-        </a>
-        <a
-          className='flex items-center gap-2 hover:underline hover:underline-offset-4'
-          href='https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-          target='_blank'
-          rel='noopener noreferrer'>
-          <Image aria-hidden src='/window.svg' alt='Window icon' width={16} height={16} />
-          Ví dụ
-        </a>
-        <a
-          className='flex items-center gap-2 hover:underline hover:underline-offset-4'
-          href='https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-          target='_blank'
-          rel='noopener noreferrer'>
-          <Image aria-hidden src='/globe.svg' alt='Globe icon' width={16} height={16} />
-          Đến nextjs.org →
-        </a>
-      </footer>
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900' />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <Card className='w-full max-w-md'>
+          <CardHeader>
+            <CardTitle className='text-red-600'>Lỗi</CardTitle>
+            <CardDescription>{error}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={refreshUser} className='w-full'>
+              Thử lại
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Helper function to mask sensitive data
+  const maskPhone = (phone: string | undefined) => {
+    if (!phone) return ''
+    return phone.replace(/.(?=.{4})/g, '*')
+  }
+
+  const maskEmail = (email: string | undefined) => {
+    if (!email) return ''
+    const [username, domain] = email.split('@')
+    if (username.length <= 2) return email
+    const maskedUsername = '*'.repeat(username.length - 2) + username.slice(-2)
+    return `${maskedUsername}@${domain}`
+  }
+
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return ''
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
+  }
+
+  return (
+    <div className=''>
+      <Card className='shadow-lg'>
+        <CardHeader className='pb-4'>
+          <CardTitle className='text-2xl font-bold text-gray-900'>Xin Chào, {user?.username}!</CardTitle>
+          <CardDescription className='text-base text-gray-600 mt-2'>Thông tin tài khoản của bạn:</CardDescription>
+        </CardHeader>
+
+        <CardContent className='space-y-6'>
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4'>
+            {/* Personal Information */}
+            <div className='space-y-4'>
+              <div className='flex justify-between py-2 border-b border-gray-100'>
+                <span className='text-gray-600 font-medium'>Họ và Tên:</span>
+                <span className='text-gray-900 font-semibold'>{user?.full_name || 'Chưa cập nhật'}</span>
+              </div>
+
+              <div className='flex justify-between py-2 border-b border-gray-100'>
+                <span className='text-gray-600 font-medium'>Ngày Sinh:</span>
+                <span className='text-gray-900 font-semibold'>{formatDate(user?.dob) || 'Chưa cập nhật'}</span>
+              </div>
+
+              <div className='flex justify-between py-2 border-b border-gray-100'>
+                <span className='text-gray-600 font-medium'>Giới tính:</span>
+                <span className='text-gray-900 font-semibold'>
+                  {user?.gender === 'male' ? 'Nam' : user?.gender === 'female' ? 'Nữ' : 'Chưa cập nhật'}
+                </span>
+              </div>
+
+              <div className='flex justify-between py-2 border-b border-gray-100'>
+                <span className='text-gray-600 font-medium'>Điện thoại:</span>
+                <span className='text-gray-900 font-semibold'>{maskPhone(user?.phone) || 'Chưa cập nhật'}</span>
+              </div>
+              <div className='flex justify-between py-2'>
+                <span className='text-gray-600 font-medium'>Email:</span>
+                <span className='text-gray-900 font-semibold'>{maskEmail(user?.email) || 'Chưa cập nhật'}</span>
+              </div>
+            </div>
+
+            {/* Contact & Document Information */}
+            <div className='space-y-4'>
+              <div className='flex justify-between py-2 border-b border-gray-100'>
+                <span className='text-gray-600 font-medium'>CCCD:</span>
+                <span className='text-gray-900 font-semibold'>Chưa cập nhật</span>
+              </div>
+
+              <div className='flex justify-between py-2 border-b border-gray-100'>
+                <span className='text-gray-600 font-medium'>Ngày Cấp:</span>
+                <span className='text-gray-900 font-semibold'>Chưa cập nhật</span>
+              </div>
+
+              <div className='flex justify-between py-2 border-b border-gray-100'>
+                <span className='text-gray-600 font-medium'>Nơi Cấp:</span>
+                <span className='text-gray-900 font-semibold'>Chưa cập nhật</span>
+              </div>
+
+              <div className='flex justify-between py-2'>
+                <span className='text-gray-600 font-medium'>Địa Chỉ:</span>
+                <span className='text-gray-900 font-semibold'>{user?.address || 'Chưa cập nhật'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <div className='pt-6 border-t border-gray-200'>
+            <Button onClick={refreshUser} variant='outline' className='w-full md:w-auto'>
+              Làm mới thông tin
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

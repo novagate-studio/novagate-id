@@ -61,3 +61,24 @@ export const login = async (username: string, password: string): Promise<Respons
   })
   return response.data
 }
+
+export const getProfile = async (): Promise<
+  ResponseData<{
+    id: string
+    username: string
+    full_name: string
+    email: string
+    phone: string
+    dob: string
+    gender: 'male' | 'female' | 'prefer-not-to-say'
+    address: string
+    avatar?: string
+    status: string
+    roles: string
+    created_at: string
+    updated_at: string
+  }>
+> => {
+  const response = await axiosInstance.get('/api/v2/auth/profile')
+  return response.data
+}

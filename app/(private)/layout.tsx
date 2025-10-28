@@ -1,41 +1,49 @@
 'use client'
 
+import { AppSidebar } from '@/app/(private)/components/app-sidebar'
+import Footer from '@/components/footer'
 import Header from '@/components/header'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { Spinner } from '@/components/ui/spinner'
-import { cookiesInstance } from '@/services/cookies'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { UserProvider, useUser } from '@/contexts/user-context'
 
-export default function Layout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
-  const [hasAccessToken, setHasAccessToken] = useState<boolean | undefined>()
-  const router = useRouter()
-  useEffect(() => {
-    const token = cookiesInstance.get('access_token')
-    if (!token) {
-      router.push('/login')
-      setHasAccessToken(false)
-    } else {
-      setHasAccessToken(true)
-    }
-  }, [])
-  if (hasAccessToken === undefined) {
+function PrivateLayoutContent({ children }: { children: React.ReactNode }) {
+  const { user, loading, error } = useUser()
+
+  if (loading) {
     return (
       <div className='w-screen h-screen flex items-center justify-center'>
         <Spinner className='size-8' />
       </div>
     )
   }
-  if (hasAccessToken === false) {
-    return null
+
+  if (error && !user) {
+    return null // UserContext will handle redirect to login
   }
+
   return (
-    <>
-      <Header />
-      {children}
-    </>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <div className='min-h-screen flex flex-col'>
+          <Header />
+          <div className='p-4 flex-1'>{children}</div>
+          <Footer />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  )
+}
+
+export default function Layout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return (
+    <UserProvider>
+      <PrivateLayoutContent>{children}</PrivateLayoutContent>
+    </UserProvider>
   )
 }

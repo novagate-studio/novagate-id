@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import moment from 'moment'
+import { vi } from 'date-fns/locale'
 interface DobPickerProps {
   value?: Date | null
   onChange?: (date: Date | undefined) => void
@@ -16,7 +17,7 @@ export function DobPicker({ value, onChange }: DobPickerProps) {
   const [open, setOpen] = React.useState(false)
 
   return (
-    <div >
+    <div>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant='outline' id='date' className='w-full justify-between font-normal'>
@@ -29,6 +30,7 @@ export function DobPicker({ value, onChange }: DobPickerProps) {
             mode='single'
             selected={value || undefined}
             captionLayout='dropdown'
+            locale={vi}
             onSelect={(date) => {
               onChange?.(date)
               setOpen(false)
