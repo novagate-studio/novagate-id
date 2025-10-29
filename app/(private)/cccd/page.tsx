@@ -17,7 +17,8 @@ import { vi } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import axiosInstance from '@/services/axios'
-import { getCaptcha } from '@/services/capcha'
+import { getCaptcha, verifyCaptcha } from '@/services/capcha'
+import { addIdentifyDocument } from '@/services/user'
 import Image from 'next/image'
 
 // Form schema
@@ -65,11 +66,10 @@ export default function CCCDPage() {
   const fetchCaptcha = async () => {
     setIsLoadingCaptcha(true)
     try {
-      const blob = await getCaptcha()
-      const image = URL.createObjectURL(blob)
+      const image = await getCaptcha()
+      form.resetField('verifyCode')
       setCaptchaImage(image)
     } catch (error) {
-      console.error('Error fetching captcha:', error)
       toast.error('Không thể tải mã xác thực. Vui lòng thử lại.')
     } finally {
       setIsLoadingCaptcha(false)
@@ -87,21 +87,40 @@ export default function CCCDPage() {
 
     setIsSubmitting(true)
     try {
-      // TODO: Implement CCCD update API call
-      console.log('CCCD form values:', values)
-      toast.success('Cập nhật thông tin CCCD thành công!')
-      
+      // First verify captcha
+      const verifyResponse = await verifyCaptcha(values.verifyCode)
+      if (verifyResponse.code !== 200) {
+        toast.error('Mã xác thực không đúng. Vui lòng thử lại.')
+        fetchCaptcha() // Refresh captcha on failed verification
+        return
+      }
+
+      // If captcha is valid, proceed with adding identity document
+      const documentData = {
+        document_number: values.documentNumber,
+        document_type: values.documentType,
+        place_of_issue: values.issuedPlace,
+        issue_date: format(values.issuedDate, 'yyyy-MM-dd'), // Format date for API
+      }
+
+      const response = await addIdentifyDocument(documentData)
+
+      if (response.code === 200) {
+        toast.success('Cập nhật thông tin CCCD thành công!')
+      } else {
+        toast.error(response.errors?.vi || 'Có lỗi xảy ra khi cập nhật thông tin CCCD')
+      }
+
       // Reset form after successful submission
       form.reset()
       fetchCaptcha() // Refresh captcha
     } catch (error) {
-      console.error('Error updating CCCD:', error)
       toast.error('Có lỗi xảy ra khi cập nhật thông tin CCCD')
+      fetchCaptcha() // Refresh captcha on error
     } finally {
       setIsSubmitting(false)
     }
   }
-
   return (
     <div className=''>
       <Card>
@@ -113,46 +132,45 @@ export default function CCCDPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
               {/* Document Type */}
               <div className='grid grid-cols-1 md:grid-cols-[200px_1fr] gap-4'>
+                <FormField
+                  control={form.control}
+                  name='documentType'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CCCD/Hộ Chiếu</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className='w-full'>
+                            <SelectValue placeholder='Căn cước công dân' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {documentTypes.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name='documentType'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>CCCD/Hộ Chiếu</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                {/* Document Number */}
+                <FormField
+                  control={form.control}
+                  name='documentNumber'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Số CCCD/Hộ chiếu</FormLabel>
                       <FormControl>
-                        <SelectTrigger className='w-full'>
-                          <SelectValue placeholder='Căn cước công dân' />
-                        </SelectTrigger>
+                        <Input placeholder='Số CCCD/Hộ chiếu' {...field} />
                       </FormControl>
-                      <SelectContent>
-                        {documentTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Document Number */}
-              <FormField
-                control={form.control}
-                name='documentNumber'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Số CCCD/Hộ chiếu</FormLabel>
-                    <FormControl>
-                      <Input placeholder='Số CCCD/Hộ chiếu' {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* Issued Place */}
@@ -216,7 +234,10 @@ export default function CCCDPage() {
                 <div className='flex items-center gap-4'>
                   <div>
                     {captchaImage ? (
-                      <Image src={captchaImage} alt='Captcha' width={128} height={48} className='border rounded-md bg-gray-100 object-contain' />
+                      <div
+                        className='border rounded-md bg-gray-100 object-contain'
+                        dangerouslySetInnerHTML={{ __html: captchaImage }}
+                      />
                     ) : (
                       <div className='border rounded-md bg-gray-100 h-12 w-32 flex items-center justify-center'>
                         <span className='text-gray-400 text-sm'>Loading...</span>
@@ -251,11 +272,8 @@ export default function CCCDPage() {
 
               {/* Action Buttons */}
               <div className='flex gap-4 pt-4'>
-                <Button type='submit' disabled={isSubmitting} className='flex-1'>
+                <Button type='submit' disabled={isSubmitting} className='flex-1 md:max-w-3xs'>
                   {isSubmitting ? 'Đang cập nhật...' : 'Cập Nhật'}
-                </Button>
-                <Button type='button' variant='outline' onClick={() => form.reset()} className='flex-1'>
-                  Bỏ Qua
                 </Button>
               </div>
             </form>

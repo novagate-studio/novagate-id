@@ -44,7 +44,6 @@ export function UserProvider({ children }: UserProviderProps) {
         throw new Error(response.errors?.vi || response.errors?.en || 'Failed to fetch user profile')
       }
     } catch (err: any) {
-      console.error('Error fetching user profile:', err)
       setError(err.message)
       
       // If token is invalid, redirect to login
