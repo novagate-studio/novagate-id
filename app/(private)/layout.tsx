@@ -87,6 +87,7 @@ function PrivateLayoutContent({ children }: { children: React.ReactNode }) {
       setIsConfirming(false)
       setShowOTPDialog(false)
       setOtp('')
+      setCaptcha('')
     }
   }
 
