@@ -17,7 +17,7 @@ import { vi } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import axiosInstance from '@/services/axios'
-import { getCaptcha, verifyCaptcha } from '@/services/capcha'
+import { getCaptcha, verifyCaptcha } from '@/services/captcha'
 import { addIdentityDocument } from '@/services/user'
 import Image from 'next/image'
 import { useUser } from '@/contexts/user-context'
@@ -101,7 +101,7 @@ export default function CCCDPage() {
         document_type: values.documentType,
         place_of_issue: values.issuedPlace,
         issue_date: format(values.issuedDate, 'yyyy-MM-dd'),
-        capcha: values.verifyCode,
+        captcha: values.verifyCode,
       }
 
       const response = await addIdentityDocument(documentData)

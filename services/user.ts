@@ -12,7 +12,7 @@ export const addIdentityDocument = async (document: {
   document_type: string
   place_of_issue: string
   issue_date: string
-  capcha: string
+  captcha: string
 }): Promise<ResponseData<User>> => {
   const response = await axiosInstance.post('/api/v2/auth/addIdentityDocument', document)
   return response.data

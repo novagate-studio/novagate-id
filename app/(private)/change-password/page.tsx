@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { getCaptcha } from '@/services/capcha'
+import { getCaptcha } from '@/services/captcha'
 import { changePassword } from '@/services/auth'
 
 // Form schema
