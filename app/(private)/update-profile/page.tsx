@@ -125,8 +125,8 @@ export default function UpdateProfilePage() {
     } catch (error) {
       toast.error('Có lỗi xảy ra khi cập nhật thông tin cá nhân')
     } finally {
-      fetchCaptcha() // Refresh captcha
-      form.setValue('verifyCode', '') // Reset verify code after fetching new captcha
+      fetchCaptcha()
+      form.setValue('verifyCode', '') // Reset verify code
       setIsSubmitting(false)
     }
   }
