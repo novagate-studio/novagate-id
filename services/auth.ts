@@ -82,3 +82,13 @@ export const getProfile = async (): Promise<
   const response = await axiosInstance.get('/api/v2/auth/profile')
   return response.data
 }
+
+export const changePassword = async (data: {
+  old_password: string
+  password: string
+  password_confirmation: string
+  captcha: string
+}): Promise<ResponseData<any>> => {
+  const response = await axiosInstance.post('/api/v2/auth/changePassword', data)
+  return response.data
+}

@@ -18,8 +18,10 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import axiosInstance from '@/services/axios'
 import { getCaptcha, verifyCaptcha } from '@/services/capcha'
-import { addIdentifyDocument } from '@/services/user'
+import { addIdentityDocument } from '@/services/user'
 import Image from 'next/image'
+import { useUser } from '@/contexts/user-context'
+import { DOCUMENT_TYPE } from '@/constants'
 
 // Form schema
 const cccdSchema = z.object({
@@ -44,8 +46,8 @@ type CCCDFormData = z.infer<typeof cccdSchema>
 
 // Document types
 const documentTypes = [
-  { value: 'cccd', label: 'Căn cước công dân' },
-  { value: 'passport', label: 'Hộ chiếu' },
+  { value: DOCUMENT_TYPE.CCCD, label: 'Căn cước công dân' },
+  { value: DOCUMENT_TYPE.PASSPORT, label: 'Hộ chiếu' },
 ]
 
 export default function CCCDPage() {
@@ -53,12 +55,18 @@ export default function CCCDPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingCaptcha, setIsLoadingCaptcha] = useState(false)
 
+  const { user } = useUser()
+  const alreadyAddedDocument = user?.user_identity_documents.length! > 0
+
   const form = useForm<CCCDFormData>({
     resolver: zodResolver(cccdSchema),
     defaultValues: {
-      documentType: '',
-      documentNumber: '',
-      issuedPlace: '',
+      documentType: user?.user_identity_documents[0]?.document_type || 'CCCD',
+      documentNumber: user?.user_identity_documents[0]?.document_number || '',
+      issuedPlace: user?.user_identity_documents[0]?.place_of_issue || '',
+      issuedDate: user?.user_identity_documents[0]?.issue_date
+        ? new Date(user?.user_identity_documents[0]?.issue_date)
+        : undefined,
       verifyCode: '',
     },
   })
@@ -87,37 +95,26 @@ export default function CCCDPage() {
 
     setIsSubmitting(true)
     try {
-      // First verify captcha
-      const verifyResponse = await verifyCaptcha(values.verifyCode)
-      if (verifyResponse.code !== 200) {
-        toast.error('Mã xác thực không đúng. Vui lòng thử lại.')
-        fetchCaptcha() // Refresh captcha on failed verification
-        return
-      }
-
       // If captcha is valid, proceed with adding identity document
       const documentData = {
         document_number: values.documentNumber,
         document_type: values.documentType,
         place_of_issue: values.issuedPlace,
-        issue_date: format(values.issuedDate, 'yyyy-MM-dd'), // Format date for API
+        issue_date: format(values.issuedDate, 'yyyy-MM-dd'),
+        capcha: values.verifyCode,
       }
 
-      const response = await addIdentifyDocument(documentData)
+      const response = await addIdentityDocument(documentData)
 
       if (response.code === 200) {
         toast.success('Cập nhật thông tin CCCD thành công!')
       } else {
         toast.error(response.errors?.vi || 'Có lỗi xảy ra khi cập nhật thông tin CCCD')
       }
-
-      // Reset form after successful submission
-      form.reset()
-      fetchCaptcha() // Refresh captcha
     } catch (error) {
       toast.error('Có lỗi xảy ra khi cập nhật thông tin CCCD')
-      fetchCaptcha() // Refresh captcha on error
     } finally {
+      fetchCaptcha() // Refresh captcha
       setIsSubmitting(false)
     }
   }
@@ -138,7 +135,7 @@ export default function CCCDPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>CCCD/Hộ Chiếu</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select disabled={alreadyAddedDocument} onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger className='w-full'>
                             <SelectValue placeholder='Căn cước công dân' />
@@ -165,7 +162,7 @@ export default function CCCDPage() {
                     <FormItem>
                       <FormLabel>Số CCCD/Hộ chiếu</FormLabel>
                       <FormControl>
-                        <Input placeholder='Số CCCD/Hộ chiếu' {...field} />
+                        <Input disabled={alreadyAddedDocument} placeholder='Số CCCD/Hộ chiếu' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -181,7 +178,7 @@ export default function CCCDPage() {
                   <FormItem>
                     <FormLabel>Nơi cấp</FormLabel>
                     <FormControl>
-                      <Input placeholder='Nơi cấp' {...field} />
+                      <Input disabled={alreadyAddedDocument} placeholder='Nơi cấp' {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -196,7 +193,7 @@ export default function CCCDPage() {
                   <FormItem className='flex flex-col'>
                     <FormLabel>Ngày cấp</FormLabel>
                     <Popover>
-                      <PopoverTrigger asChild>
+                      <PopoverTrigger asChild disabled={alreadyAddedDocument}>
                         <FormControl>
                           <Button
                             variant='outline'
@@ -230,52 +227,56 @@ export default function CCCDPage() {
               />
 
               {/* Captcha */}
-              <div className='space-y-4'>
-                <div className='flex items-center gap-4'>
-                  <div>
-                    {captchaImage ? (
-                      <div
-                        className='border rounded-md bg-gray-100 object-contain'
-                        dangerouslySetInnerHTML={{ __html: captchaImage }}
-                      />
-                    ) : (
-                      <div className='border rounded-md bg-gray-100 h-12 w-32 flex items-center justify-center'>
-                        <span className='text-gray-400 text-sm'>Loading...</span>
-                      </div>
-                    )}
+              {!alreadyAddedDocument && (
+                <div className='space-y-4'>
+                  <div className='flex items-center gap-4'>
+                    <div>
+                      {captchaImage ? (
+                        <div
+                          className='border rounded-md bg-gray-100 object-contain'
+                          dangerouslySetInnerHTML={{ __html: captchaImage }}
+                        />
+                      ) : (
+                        <div className='border rounded-md bg-gray-100 h-12 w-32 flex items-center justify-center'>
+                          <span className='text-gray-400 text-sm'>Loading...</span>
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      size='sm'
+                      onClick={fetchCaptcha}
+                      disabled={isLoadingCaptcha}
+                      className='flex items-center gap-2'>
+                      <RefreshCw className={cn('h-4 w-4', isLoadingCaptcha && 'animate-spin')} />
+                    </Button>
                   </div>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    size='sm'
-                    onClick={fetchCaptcha}
-                    disabled={isLoadingCaptcha}
-                    className='flex items-center gap-2'>
-                    <RefreshCw className={cn('h-4 w-4', isLoadingCaptcha && 'animate-spin')} />
-                  </Button>
-                </div>
 
-                <FormField
-                  control={form.control}
-                  name='verifyCode'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Mã xác thực</FormLabel>
-                      <FormControl>
-                        <Input placeholder='Mã xác thực' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                  <FormField
+                    control={form.control}
+                    name='verifyCode'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mã xác thực</FormLabel>
+                        <FormControl>
+                          <Input placeholder='Mã xác thực' {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
 
               {/* Action Buttons */}
-              <div className='flex gap-4 pt-4'>
-                <Button type='submit' disabled={isSubmitting} className='flex-1 md:max-w-3xs'>
-                  {isSubmitting ? 'Đang cập nhật...' : 'Cập Nhật'}
-                </Button>
-              </div>
+              {!alreadyAddedDocument && (
+                <div className='flex gap-4 pt-4'>
+                  <Button type='submit' disabled={isSubmitting} className='flex-1 md:max-w-3xs'>
+                    {isSubmitting ? 'Đang cập nhật...' : 'Cập Nhật'}
+                  </Button>
+                </div>
+              )}
             </form>
           </Form>
         </CardContent>
