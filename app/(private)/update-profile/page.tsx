@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -67,10 +67,10 @@ export default function UpdateProfilePage() {
   // Update form with user data when user is loaded
   useEffect(() => {
     if (user) {
-      const validGender = ['male', 'female', 'prefer-not-to-say'].includes(user.gender) 
-        ? user.gender as 'male' | 'female' | 'prefer-not-to-say'
+      const validGender = ['male', 'female', 'prefer-not-to-say'].includes(user.gender)
+        ? (user.gender as 'male' | 'female' | 'prefer-not-to-say')
         : 'prefer-not-to-say'
-      
+
       form.reset({
         fullName: user.full_name || '',
         dob: user.dob ? new Date(user.dob) : null,
@@ -81,7 +81,7 @@ export default function UpdateProfilePage() {
     }
   }, [user, form])
 
-  const fetchCaptcha = async () => {
+  const fetchCaptcha = useCallback(async () => {
     setIsLoadingCaptcha(true)
     try {
       const image = await getCaptcha()
@@ -91,12 +91,12 @@ export default function UpdateProfilePage() {
     } finally {
       setIsLoadingCaptcha(false)
     }
-  }
+  }, [])
 
   // Load captcha on component mount
   useEffect(() => {
     fetchCaptcha()
-  }, [])
+  }, [fetchCaptcha])
 
   // Handle form submission
   async function onSubmit(values: UpdateProfileFormData) {
@@ -114,7 +114,7 @@ export default function UpdateProfilePage() {
       }
 
       const response = await updateProfile(profileData)
-      
+
       if (response.code === 200) {
         toast.success('Cập nhật thông tin cá nhân thành công!')
         // Refresh user data to show updated info
