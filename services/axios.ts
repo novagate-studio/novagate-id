@@ -4,7 +4,7 @@ import { cookiesInstance } from './cookies'
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   // Enable cookies to be sent with requests
-  // withCredentials: true,
+  withCredentials: true,
 })
 
 // Request interceptor to attach the token to each request
