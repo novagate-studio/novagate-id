@@ -14,7 +14,7 @@ import {
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { User, CreditCard, Key, Mail, Phone, FileText, CreditCard as IdCard, LogOut } from 'lucide-react'
+import { User, CreditCard, Key, Mail, Phone, FileText, CreditCard as IdCard, LogOut, ShieldUser } from 'lucide-react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'

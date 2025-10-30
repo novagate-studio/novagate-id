@@ -47,11 +47,7 @@ export function UserProvider({ children }: UserProviderProps) {
       }
     } catch (err: any) {
       setError(err.message)
-
-      // If token is invalid, redirect to login
-      if (err.message.includes('token') || err.message.includes('unauthorized')) {
-        logout()
-      }
+      logout()
     } finally {
       setLoading(false)
     }

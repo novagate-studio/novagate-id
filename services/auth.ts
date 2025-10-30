@@ -92,3 +92,11 @@ export const changePassword = async (data: {
   const response = await axiosInstance.post('/api/v2/auth/changePassword', data)
   return response.data
 }
+export const sendOTPForVerifyPhone = async (): Promise<ResponseData<any>> => {
+  const response = await axiosInstance.post(`/api/v2/auth/phone/sendOtp`)
+  return response.data
+}
+export const verifyPhone = async (data: { otp: string; captcha: string }): Promise<ResponseData<any>> => {
+  const response = await axiosInstance.post(`/api/v2/auth/phone/verifyOtp`, data)
+  return response.data
+}

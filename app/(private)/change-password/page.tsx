@@ -13,42 +13,45 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { getCaptcha } from '@/services/captcha'
 import { changePassword } from '@/services/auth'
+import { useUser } from '@/contexts/user-context'
 
 // Form schema
-const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, {
-    message: 'Vui lòng nhập mật khẩu hiện tại',
-  }),
-  newPassword: z
-    .string()
-    .min(8, {
-      message: 'Mật khẩu phải có ít nhất 8 ký tự',
-    })
-    .max(128, {
-      message: 'Mật khẩu không được vượt quá 128 ký tự',
-    })
-    .regex(/[a-z]/, {
-      message: 'Mật khẩu phải chứa ít nhất một chữ cái thường',
-    })
-    .regex(/[A-Z]/, {
-      message: 'Mật khẩu phải chứa ít nhất một chữ cái hoa',
-    })
-    .regex(/[0-9]/, {
-      message: 'Mật khẩu phải chứa ít nhất một số',
-    })
-    .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, {
-      message: 'Mật khẩu phải chứa ít nhất một ký tự đặc biệt',
+const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, {
+      message: 'Vui lòng nhập mật khẩu hiện tại',
     }),
-  confirmPassword: z.string().min(1, {
-    message: 'Vui lòng xác nhận mật khẩu mới',
-  }),
-  verifyCode: z.string().min(1, {
-    message: 'Vui lòng nhập mã xác thực',
-  }),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Mật khẩu xác nhận không khớp',
-  path: ['confirmPassword'],
-})
+    newPassword: z
+      .string()
+      .min(8, {
+        message: 'Mật khẩu phải có ít nhất 8 ký tự',
+      })
+      .max(128, {
+        message: 'Mật khẩu không được vượt quá 128 ký tự',
+      })
+      .regex(/[a-z]/, {
+        message: 'Mật khẩu phải chứa ít nhất một chữ cái thường',
+      })
+      .regex(/[A-Z]/, {
+        message: 'Mật khẩu phải chứa ít nhất một chữ cái hoa',
+      })
+      .regex(/[0-9]/, {
+        message: 'Mật khẩu phải chứa ít nhất một số',
+      })
+      .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, {
+        message: 'Mật khẩu phải chứa ít nhất một ký tự đặc biệt',
+      }),
+    confirmPassword: z.string().min(1, {
+      message: 'Vui lòng xác nhận mật khẩu mới',
+    }),
+    verifyCode: z.string().min(1, {
+      message: 'Vui lòng nhập mã xác thực',
+    }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword'],
+  })
 
 type ChangePasswordFormData = z.infer<typeof changePasswordSchema>
 
@@ -56,7 +59,7 @@ export default function ChangePasswordPage() {
   const [captchaImage, setCaptchaImage] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingCaptcha, setIsLoadingCaptcha] = useState(false)
-
+  const { logout } = useUser()
   const form = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
@@ -99,11 +102,12 @@ export default function ChangePasswordPage() {
       }
 
       const response = await changePassword(passwordData)
-      
+
       if (response.code === 200) {
-        toast.success('Đổi mật khẩu thành công!')
-        // Reset form after successful submission
         form.reset()
+        toast.success('Đổi mật khẩu thành công! Vui lòng đăng nhập lại.')
+        logout()
+        // Reset form after successful submission
       } else {
         toast.error(response.errors?.vi || 'Có lỗi xảy ra khi đổi mật khẩu')
       }

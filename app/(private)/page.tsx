@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { DOCUMENT_TYPE } from '@/constants'
 import { useUser } from '@/contexts/user-context'
-
 export default function Home() {
   const { user, loading, error, refreshUser } = useUser()
 
@@ -58,7 +57,7 @@ export default function Home() {
   }
 
   return (
-    <div className=''>
+    <div className='space-y-4'>
       <Card className='shadow-lg'>
         <CardHeader className='pb-4'>
           <CardTitle className='text-2xl font-bold text-gray-900'>Xin Chào, {user?.username}!</CardTitle>
