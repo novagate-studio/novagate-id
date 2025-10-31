@@ -14,7 +14,7 @@ import {
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { User, CreditCard, Key, Mail, Phone, FileText, CreditCard as IdCard, LogOut, ShieldUser } from 'lucide-react'
+import { User, CreditCard, Key, Mail, Phone, FileText, CreditCard as IdCard, LogOut, Activity } from 'lucide-react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
@@ -50,6 +50,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </SidebarMenuButton>
             </SidebarMenuItem>
 
+            <SidebarMenuItem>
+              <SidebarMenuButton size={'lg'} className='' isActive={pathname === '/user-activities'} asChild>
+                <Link href='/user-activities' onClick={handleMenuClick}>
+                  <Activity className='size-5!' />
+                  <span>Lịch sử hoạt động</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton size={'lg'} className='' isActive={pathname === '/cccd'} asChild>
                 <Link href='/cccd' onClick={handleMenuClick}>

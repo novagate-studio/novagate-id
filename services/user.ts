@@ -1,6 +1,7 @@
 import { User } from '@/models/user'
 import { ResponseData } from '.'
 import axiosInstance from './axios'
+import { UserActivity } from '@/models/activity'
 
 export const getProfile = async (): Promise<ResponseData<User>> => {
   const response = await axiosInstance.get('/api/v2/auth/getProfile')
@@ -45,4 +46,8 @@ export const updateProfile = async (data: {
 }): Promise<ResponseData<any>> => {
   const response = await axiosInstance.post('/api/v2/auth/updateProfile', data)
   return response.data
+}
+export const getUserActivities = async (): Promise<UserActivity[]> => {
+  const response = await axiosInstance.get('/api/v2/userActivityLogs')
+  return response.data?.data?.user_activity_logs || []
 }
