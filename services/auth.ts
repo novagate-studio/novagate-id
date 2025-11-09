@@ -92,6 +92,11 @@ export const changePassword = async (data: {
   const response = await axiosInstance.post('/api/v2/auth/changePassword', data)
   return response.data
 }
+
+export const forgotPassword = async (phone: string): Promise<ResponseData<any>> => {
+  const response = await axiosInstance.post('/api/v2/auth/forgotPassword', { phone })
+  return response.data
+}
 export const sendOTPForVerifyPhone = async (): Promise<ResponseData<any>> => {
   const response = await axiosInstance.post(`/api/v2/auth/phone/sendOtp`)
   return response.data
