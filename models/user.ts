@@ -19,5 +19,7 @@ export type User = {
   status: string
   phone_verified: boolean
   phone_verified_at: string
+  email_verified: boolean
+  email_verified_at: string
   user_identity_documents: UserIdentityDocument[]
 }

@@ -105,3 +105,13 @@ export const verifyPhone = async (data: { otp: string; captcha: string }): Promi
   const response = await axiosInstance.post(`/api/v2/auth/phone/verifyOtp`, data)
   return response.data
 }
+
+export const sendOTPForVerifyEmail = async (): Promise<ResponseData<any>> => {
+  const response = await axiosInstance.post(`/api/v2/auth/sendEmailOtp`)
+  return response.data
+}
+
+export const verifyEmail = async (data: { otp: string; captcha: string }): Promise<ResponseData<any>> => {
+  const response = await axiosInstance.post(`/api/v2/auth/verifyEmailOtp`, data)
+  return response.data
+}
