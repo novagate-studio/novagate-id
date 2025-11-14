@@ -29,9 +29,11 @@ export function UserProvider({ children }: UserProviderProps) {
 
   const fetchUserProfile = async () => {
     try {
-      setLoading(true)
-      setError(null)
-      
+      if (!user) {
+        setLoading(true)
+        setError(null)
+      }
+
       const token = cookiesInstance.get('access_token')
       if (!token) {
         throw new Error('No access token found')
@@ -44,13 +46,8 @@ export function UserProvider({ children }: UserProviderProps) {
         throw new Error(response.errors?.vi || response.errors?.en || 'Failed to fetch user profile')
       }
     } catch (err: any) {
-      console.error('Error fetching user profile:', err)
       setError(err.message)
-      
-      // If token is invalid, redirect to login
-      if (err.message.includes('token') || err.message.includes('unauthorized')) {
-        logout()
-      }
+      logout()
     } finally {
       setLoading(false)
     }

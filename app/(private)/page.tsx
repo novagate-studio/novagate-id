@@ -2,8 +2,8 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { DOCUMENT_TYPE } from '@/constants'
 import { useUser } from '@/contexts/user-context'
-
 export default function Home() {
   const { user, loading, error, refreshUser } = useUser()
 
@@ -57,7 +57,7 @@ export default function Home() {
   }
 
   return (
-    <div className=''>
+    <div className='space-y-4'>
       <Card className='shadow-lg'>
         <CardHeader className='pb-4'>
           <CardTitle className='text-2xl font-bold text-gray-900'>Xin Chào, {user?.username}!</CardTitle>
@@ -65,7 +65,7 @@ export default function Home() {
         </CardHeader>
 
         <CardContent className='space-y-6'>
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4'>
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4 text-sm'>
             {/* Personal Information */}
             <div className='space-y-4'>
               <div className='flex justify-between py-2 border-b border-gray-100'>
@@ -89,32 +89,54 @@ export default function Home() {
                 <span className='text-gray-600 font-medium'>Điện thoại:</span>
                 <span className='text-gray-900 font-semibold'>{maskPhone(user?.phone) || 'Chưa cập nhật'}</span>
               </div>
-              <div className='flex justify-between py-2'>
+              <div className='flex justify-between py-2 border-b border-gray-100'>
                 <span className='text-gray-600 font-medium'>Email:</span>
                 <span className='text-gray-900 font-semibold'>{maskEmail(user?.email) || 'Chưa cập nhật'}</span>
+              </div>
+              <div className='flex justify-between py-2'>
+                <span className='text-gray-600 font-medium'>Địa Chỉ:</span>
+                <span className='text-gray-900 font-semibold'>{user?.address || 'Chưa cập nhật'}</span>
               </div>
             </div>
 
             {/* Contact & Document Information */}
             <div className='space-y-4'>
               <div className='flex justify-between py-2 border-b border-gray-100'>
-                <span className='text-gray-600 font-medium'>CCCD:</span>
-                <span className='text-gray-900 font-semibold'>Chưa cập nhật</span>
+                <span className='text-gray-600 font-medium'>Loại giấy tờ:</span>
+                <span className='text-gray-900 font-semibold'>
+                  {user?.user_identity_documents?.[0]?.document_type === DOCUMENT_TYPE.CCCD
+                    ? 'Căn cước công dân'
+                    : user?.user_identity_documents?.[0]?.document_type === DOCUMENT_TYPE.PASSPORT
+                    ? 'Hộ chiếu'
+                    : 'Chưa cập nhật'}
+                </span>
+              </div>
+
+              <div className='flex justify-between py-2 border-b border-gray-100'>
+                <span className='text-gray-600 font-medium'>
+                  {user?.user_identity_documents?.[0]?.document_type === DOCUMENT_TYPE.PASSPORT
+                    ? 'Số Hộ chiếu:'
+                    : 'Số CCCD:'}
+                </span>
+                <span className='text-gray-900 font-semibold'>
+                  {user?.user_identity_documents?.[0]?.document_number || 'Chưa cập nhật'}
+                </span>
               </div>
 
               <div className='flex justify-between py-2 border-b border-gray-100'>
                 <span className='text-gray-600 font-medium'>Ngày Cấp:</span>
-                <span className='text-gray-900 font-semibold'>Chưa cập nhật</span>
+                <span className='text-gray-900 font-semibold'>
+                  {user?.user_identity_documents?.[0]?.issue_date
+                    ? formatDate(user.user_identity_documents[0].issue_date)
+                    : 'Chưa cập nhật'}
+                </span>
               </div>
 
-              <div className='flex justify-between py-2 border-b border-gray-100'>
+              <div className='flex justify-between py-2 '>
                 <span className='text-gray-600 font-medium'>Nơi Cấp:</span>
-                <span className='text-gray-900 font-semibold'>Chưa cập nhật</span>
-              </div>
-
-              <div className='flex justify-between py-2'>
-                <span className='text-gray-600 font-medium'>Địa Chỉ:</span>
-                <span className='text-gray-900 font-semibold'>{user?.address || 'Chưa cập nhật'}</span>
+                <span className='text-gray-900 font-semibold'>
+                  {user?.user_identity_documents?.[0]?.place_of_issue || 'Chưa cập nhật'}
+                </span>
               </div>
             </div>
           </div>
