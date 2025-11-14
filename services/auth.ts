@@ -82,3 +82,22 @@ export const getProfile = async (): Promise<
   const response = await axiosInstance.get('/api/v2/auth/profile')
   return response.data
 }
+
+export const resetPassword = async (data: {
+  otp: string
+  phone: string
+  username: string
+  password: string
+  confirm_password: string
+}): Promise<ResponseData<any>> => {
+  const response = await axiosInstance.post(
+    `/api/v2/auth/resetPassword?otp=${encodeURIComponent(data.otp)}&phone=${encodeURIComponent(
+      data.phone
+    )}&username=${encodeURIComponent(data.username)}`,
+    {
+      password: data.password,
+      confirm_password: data.confirm_password,
+    }
+  )
+  return response.data
+}
