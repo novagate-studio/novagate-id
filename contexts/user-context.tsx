@@ -87,9 +87,8 @@ export function UserProvider({ children }: UserProviderProps) {
     // Check token when window regains focus
     const handleFocus = () => {
       const currentToken = cookiesInstance.get('access_token')
-      if (currentToken) {
-        fetchUserProfile()
-      } else {
+      if (!currentToken) {
+        // Token was removed, logout user
         logout()
       }
     }
