@@ -1,33 +1,32 @@
 'use client'
-import { Button } from '@/components/ui/button'
-import { Field, FieldDescription, FieldGroup } from '@/components/ui/field'
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { cn } from '@/lib/utils'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { set, z } from 'zod'
-import { DobPicker } from './dob-picker'
-import { checkUsername, checkEmail, sendOTP, registry } from '@/services/auth'
+import { REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { set, z } from 'zod';
+
+import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
-import { REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { cookiesInstance } from '@/services/cookies'
+    Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle
+} from '@/components/ui/dialog';
+import { Field, FieldDescription, FieldGroup } from '@/components/ui/field';
+import {
+    Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
+import { checkEmail, checkUsername, registry, sendOTP } from '@/services/auth';
+import { cookiesInstance } from '@/services/cookies';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+import { DobPicker } from './dob-picker';
+
 const formSchema = z
   .object({
     fullname: z.string().min(1, {
@@ -116,6 +115,23 @@ const formSchema = z
         },
         {
           message: 'Vui lòng chọn ngày sinh',
+        }
+      )
+      .refine(
+        (date) => {
+          if (!date) return false
+          const today = new Date()
+          const age = today.getFullYear() - date.getFullYear()
+          const monthDiff = today.getMonth() - date.getMonth()
+          const dayDiff = today.getDate() - date.getDate()
+
+          // Calculate exact age
+          const exactAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age
+
+          return exactAge >= 16
+        },
+        {
+          message: 'Bạn dưới 16 tuổi, đề nghị cha, mẹ, người giám hộ đăng ký tài khoản',
         }
       )
       .refine(
@@ -236,7 +252,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
               Điền vào biểu mẫu bên dưới để tạo tài khoản của bạn
             </p>
           </div>
-          <Tabs defaultValue='info' value={tab} onValueChange={(tab) => {}} className='w-full'>
+          <Tabs defaultValue='info' value={tab} onValueChange={(tab) => { }} className='w-full'>
             <TabsList className='w-full mb-4'>
               <TabsTrigger value='info'>Thông tin đăng nhập</TabsTrigger>
               <TabsTrigger value='verify'>Xác minh</TabsTrigger>
