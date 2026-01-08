@@ -247,9 +247,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
         <form className={cn('flex flex-col gap-6', className)} onSubmit={form.handleSubmit(onSubmit)}>
           <div className='flex flex-col items-center gap-1 text-center'>
             <h1 className='text-2xl font-bold'>Tạo tài khoản của bạn</h1>
-            <p className='text-muted-foreground text-sm text-balance'>
+            {/* <p className='text-muted-foreground text-sm text-balance'>
               Điền vào biểu mẫu bên dưới để tạo tài khoản của bạn
-            </p>
+            </p> */}
           </div>
           <Tabs defaultValue='info' value={tab} onValueChange={(tab) => { }} className='w-full'>
             <TabsList className='w-full mb-4'>
