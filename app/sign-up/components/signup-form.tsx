@@ -278,7 +278,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                     <FormItem>
                       <FormLabel>Tên đăng nhập</FormLabel>
                       <FormControl>
-                        <Input placeholder='Chọn tên đăng nhập của bạn' {...field} />
+                        <Input placeholder='Tên đăng nhập dài 4-32 ký tự chỉ được phép chứa chữ cái hoặc số' {...field} />
                       </FormControl>
                       {/* <FormDescription>
                         {'Tên đăng nhập dài 4-32 ký tự chỉ được phép chứa chữ cái hoặc số.'}
@@ -295,7 +295,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                     <FormItem>
                       <FormLabel>Mật khẩu</FormLabel>
                       <FormControl>
-                        <Input type='password' placeholder='Nhập mật khẩu của bạn' {...field} />
+                        <Input type='password' placeholder='Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt' {...field} />
                       </FormControl>
                       {/* <FormDescription>
                         Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.
