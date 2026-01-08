@@ -1,6 +1,5 @@
 'use client'
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -11,9 +10,9 @@ import { Button } from '@/components/ui/button';
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle
 } from '@/components/ui/dialog';
-import { Field, FieldDescription, FieldGroup } from '@/components/ui/field';
+import { Field, FieldGroup } from '@/components/ui/field';
 import {
-    Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage
+    Form, FormControl, FormField, FormItem, FormLabel, FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
@@ -281,9 +280,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                       <FormControl>
                         <Input placeholder='Chọn tên đăng nhập của bạn' {...field} />
                       </FormControl>
-                      <FormDescription>
+                      {/* <FormDescription>
                         {'Tên đăng nhập dài 4-32 ký tự chỉ được phép chứa chữ cái hoặc số.'}
-                      </FormDescription>
+                      </FormDescription> */}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -298,9 +297,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                       <FormControl>
                         <Input type='password' placeholder='Nhập mật khẩu của bạn' {...field} />
                       </FormControl>
-                      <FormDescription>
+                      {/* <FormDescription>
                         Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.
-                      </FormDescription>
+                      </FormDescription> */}
                       <FormMessage />
                     </FormItem>
                   )}
