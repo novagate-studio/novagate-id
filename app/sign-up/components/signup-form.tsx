@@ -1,33 +1,211 @@
 'use client'
-import { REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Field, FieldGroup } from '@/components/ui/field'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
-import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { cn } from '@/lib/utils'
 import { checkEmail, checkUsername, registry, sendOTP } from '@/services/auth'
 import { cookiesInstance } from '@/services/cookies'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { DobPicker } from './dob-picker'
+
+// Inline styles
+const styles: Record<string, CSSProperties> = {
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem',
+  },
+  header: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '0.25rem',
+    textAlign: 'center',
+  },
+  title: {
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    margin: 0,
+  },
+  tabsList: {
+    display: 'flex',
+    width: '100%',
+    backgroundColor: '#f4f4f5',
+    borderRadius: '0.375rem',
+    padding: '0.25rem',
+    marginBottom: '1rem',
+  },
+  tabTrigger: {
+    flex: 1,
+    padding: '0.5rem 0.75rem',
+    fontSize: '0.875rem',
+    fontWeight: 500,
+    border: 'none',
+    borderRadius: '0.25rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  tabTriggerActive: {
+    backgroundColor: '#ffffff',
+    boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    color: '#18181b',
+  },
+  tabTriggerInactive: {
+    backgroundColor: 'transparent',
+    color: '#71717a',
+  },
+  fieldGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+  },
+  formItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem',
+  },
+  label: {
+    fontSize: '0.875rem',
+    fontWeight: 500,
+  },
+  input: {
+    display: 'flex',
+    height: '2.5rem',
+    width: '100%',
+    borderRadius: '0.375rem',
+    border: '1px solid #e4e4e7',
+    backgroundColor: 'transparent',
+    padding: '0.5rem 0.75rem',
+    fontSize: '1rem',
+    outline: 'none',
+    boxSizing: 'border-box',
+  },
+  errorMessage: {
+    fontSize: '0.875rem',
+    fontWeight: 500,
+    color: '#ef4444',
+    margin: 0,
+  },
+  button: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    whiteSpace: 'nowrap',
+    borderRadius: '0.375rem',
+    fontSize: '0.875rem',
+    fontWeight: 500,
+    transition: 'all 0.2s',
+    padding: '0.5rem 1rem',
+    cursor: 'pointer',
+    border: 'none',
+    backgroundColor: '#18181b',
+    color: '#fafafa',
+    width: '100%',
+  },
+  buttonOutline: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    whiteSpace: 'nowrap',
+    borderRadius: '0.375rem',
+    fontSize: '0.875rem',
+    fontWeight: 500,
+    transition: 'all 0.2s',
+    padding: '0.5rem 1rem',
+    cursor: 'pointer',
+    backgroundColor: 'transparent',
+    border: '1px solid #e4e4e7',
+    color: '#18181b',
+  },
+  buttonGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '1rem',
+  },
+  radioGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem',
+  },
+  radioItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+  },
+  radioInput: {
+    width: '1rem',
+    height: '1rem',
+    accentColor: '#18181b',
+    margin: 0,
+  },
+  radioLabel: {
+    fontSize: '0.875rem',
+  },
+  dialogOverlay: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 50,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dialogContent: {
+    position: 'relative',
+    zIndex: 50,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+    width: '100%',
+    maxWidth: '24rem',
+    borderRadius: '0.5rem',
+    border: '1px solid #e4e4e7',
+    backgroundColor: '#ffffff',
+    padding: '1.5rem',
+    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+  },
+  dialogHeader: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.375rem',
+    textAlign: 'center',
+  },
+  dialogTitle: {
+    fontSize: '1.125rem',
+    fontWeight: 600,
+    margin: 0,
+  },
+  dialogDescription: {
+    fontSize: '0.875rem',
+    color: '#71717a',
+    margin: 0,
+  },
+  otpContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    justifyContent: 'center',
+  },
+  otpInput: {
+    width: '2.5rem',
+    height: '2.5rem',
+    textAlign: 'center',
+    fontSize: '1.25rem',
+    fontWeight: 500,
+    borderRadius: '0.375rem',
+    border: '1px solid #e4e4e7',
+    outline: 'none',
+  },
+  dialogFooter: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
+}
 
 const formSchema = z
   .object({
@@ -174,7 +352,15 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
   const [otp, setOtp] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
-  const form = useForm<z.infer<typeof formSchema>>({
+  const {
+    register,
+    handleSubmit,
+    trigger,
+    getValues,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullname: '',
@@ -188,6 +374,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
       address: '',
     },
   })
+
+  const watchGender = watch('gender')
+  const watchDob = watch('dob')
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (isSubmitting) return
@@ -207,7 +396,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
     }
   }
   const continueToVerification = async () => {
-    const isValid = await form.trigger(['fullname', 'username', 'password', 'confirmPassword'])
+    const isValid = await trigger(['fullname', 'username', 'password', 'confirmPassword'])
     if (isValid) {
       setTab('verify')
     }
@@ -218,15 +407,15 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
     setIsConfirming(true)
     try {
       const response = await registry({
-        full_name: form.getValues('fullname'),
-        username: form.getValues('username'),
-        password: form.getValues('password'),
-        password_confirmation: form.getValues('confirmPassword'),
-        phone: form.getValues('phone'),
-        dob: form.getValues('dob')!.toISOString(),
-        gender: form.getValues('gender'),
-        address: form.getValues('address'),
-        email: form.getValues('email'),
+        full_name: getValues('fullname'),
+        username: getValues('username'),
+        password: getValues('password'),
+        password_confirmation: getValues('confirmPassword'),
+        phone: getValues('phone'),
+        dob: getValues('dob')!.toISOString(),
+        gender: getValues('gender'),
+        address: getValues('address'),
+        email: getValues('email'),
         otp: otp,
       })
       if (response.code === 200) {
@@ -244,205 +433,240 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
       setOtp('')
     }
   }
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (value.length > 1) value = value[0]
+    const newOtp = otp.split('')
+    newOtp[index] = value.toUpperCase()
+    setOtp(newOtp.join(''))
+
+    if (value && index < 5) {
+      const nextInput = document.getElementById(`otp-${index + 1}`)
+      nextInput?.focus()
+    }
+  }
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      const prevInput = document.getElementById(`otp-${index - 1}`)
+      prevInput?.focus()
+    }
+  }
+
   return (
     <>
-      <Form {...form}>
-        <form className={cn('flex flex-col gap-6', className)} onSubmit={form.handleSubmit(onSubmit)}>
-          <div className='flex flex-col items-center gap-1 text-center'>
-            <h1 className='text-2xl font-bold'>Tạo tài khoản của bạn</h1>
+      <form style={styles.form} onSubmit={handleSubmit(onSubmit)}>
+        <div style={styles.header}>
+          <h1 style={styles.title}>Tạo tài khoản của bạn</h1>
+        </div>
+
+        {/* Tabs */}
+        <div>
+          <div style={styles.tabsList}>
+            <button
+              type='button'
+              style={{
+                ...styles.tabTrigger,
+                ...(tab === 'info' ? styles.tabTriggerActive : styles.tabTriggerInactive),
+              }}
+              onClick={() => setTab('info')}>
+              Thông tin đăng nhập
+            </button>
+            <button
+              type='button'
+              style={{
+                ...styles.tabTrigger,
+                ...(tab === 'verify' ? styles.tabTriggerActive : styles.tabTriggerInactive),
+              }}
+              onClick={() => setTab('verify')}>
+              Xác minh
+            </button>
           </div>
-          <Tabs defaultValue='info' value={tab} onValueChange={(tab) => {}} className='w-full'>
-            <TabsList className='w-full mb-4'>
-              <TabsTrigger value='info'>Thông tin đăng nhập</TabsTrigger>
-              <TabsTrigger value='verify'>Xác minh</TabsTrigger>
-            </TabsList>
-            <TabsContent value='info'>
-              <FieldGroup>
-                <FormField
-                  control={form.control}
-                  name='fullname'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Họ và tên</FormLabel>
-                      <FormControl>
-                        <Input placeholder='Nhập họ và tên của bạn' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name='username'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tên đăng nhập</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder='Tên đăng nhập dài 4-32 ký tự chỉ được phép chứa chữ cái hoặc số'
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
-                <FormField
-                  control={form.control}
-                  name='password'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Mật khẩu</FormLabel>
-                      <FormControl>
-                        <Input
-                          type='password'
-                          placeholder='Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt'
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name='confirmPassword'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Xác nhận mật khẩu</FormLabel>
-                      <FormControl>
-                        <Input type='password' placeholder='Nhập lại mật khẩu của bạn' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          {/* Tab: Info */}
+          {tab === 'info' && (
+            <div style={styles.fieldGroup}>
+              <div style={styles.formItem}>
+                <label style={styles.label}>Họ và tên</label>
+                <input style={styles.input} placeholder='Nhập họ và tên của bạn' {...register('fullname')} />
+                {errors.fullname && <p style={styles.errorMessage}>{errors.fullname.message}</p>}
+              </div>
 
-                <Field>
-                  <Button type='button' onClick={continueToVerification}>
-                    Tiếp tục
-                  </Button>
-                </Field>
-              </FieldGroup>
-            </TabsContent>
-            <TabsContent value='verify'>
-              <FieldGroup>
-                <FormField
-                  control={form.control}
-                  name='phone'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Số điện thoại</FormLabel>
-                      <FormControl>
-                        <Input type='tel' placeholder='Nhập số điện thoại đã đăng ký Zalo' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+              <div style={styles.formItem}>
+                <label style={styles.label}>Tên đăng nhập</label>
+                <input
+                  style={styles.input}
+                  placeholder='Tên đăng nhập dài 4-32 ký tự chỉ được phép chứa chữ cái hoặc số'
+                  {...register('username')}
                 />
-                <FormField
-                  control={form.control}
-                  name='email'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type='email' placeholder='Nhập email' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name='dob'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ngày sinh</FormLabel>
-                      <FormControl>
-                        <DobPicker value={field.value} onChange={(date) => field.onChange(date || null)} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name='gender'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Giới tính</FormLabel>
-                      <FormControl>
-                        <RadioGroup value={field.value} onValueChange={field.onChange}>
-                          <div className='flex items-center space-x-2'>
-                            <RadioGroupItem value='male' id='male' />
-                            <Label htmlFor='male'>Nam</Label>
-                          </div>
-                          <div className='flex items-center space-x-2'>
-                            <RadioGroupItem value='female' id='female' />
-                            <Label htmlFor='female'>Nữ</Label>
-                          </div>
-                          <div className='flex items-center space-x-2'>
-                            <RadioGroupItem value='prefer-not-to-say' id='prefer-not-to-say' />
-                            <Label htmlFor='prefer-not-to-say'>Bí mật</Label>
-                          </div>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name='address'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Địa chỉ</FormLabel>
-                      <FormControl>
-                        <Input type='text' placeholder='Nhập địa chỉ' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {errors.username && <p style={styles.errorMessage}>{errors.username.message}</p>}
+              </div>
 
-                <div className='grid grid-cols-2 gap-4'>
-                  <Button variant='outline' onClick={() => setTab('info')} disabled={isSubmitting}>
-                    Quay lại
-                  </Button>
-                  <Button type='submit' disabled={isSubmitting}>
-                    {isSubmitting ? 'Đang gửi...' : 'Đăng ký'}
-                  </Button>
+              <div style={styles.formItem}>
+                <label style={styles.label}>Mật khẩu</label>
+                <input
+                  style={styles.input}
+                  type='password'
+                  placeholder='Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt'
+                  {...register('password')}
+                />
+                {errors.password && <p style={styles.errorMessage}>{errors.password.message}</p>}
+              </div>
+
+              <div style={styles.formItem}>
+                <label style={styles.label}>Xác nhận mật khẩu</label>
+                <input
+                  style={styles.input}
+                  type='password'
+                  placeholder='Nhập lại mật khẩu của bạn'
+                  {...register('confirmPassword')}
+                />
+                {errors.confirmPassword && <p style={styles.errorMessage}>{errors.confirmPassword.message}</p>}
+              </div>
+
+              <div>
+                <button type='button' style={styles.button} onClick={continueToVerification}>
+                  Tiếp tục
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Verify */}
+          {tab === 'verify' && (
+            <div style={styles.fieldGroup}>
+              <div style={styles.formItem}>
+                <label style={styles.label}>Số điện thoại</label>
+                <input
+                  style={styles.input}
+                  type='tel'
+                  placeholder='Nhập số điện thoại đã đăng ký Zalo'
+                  {...register('phone')}
+                />
+                {errors.phone && <p style={styles.errorMessage}>{errors.phone.message}</p>}
+              </div>
+
+              <div style={styles.formItem}>
+                <label style={styles.label}>Email</label>
+                <input style={styles.input} type='email' placeholder='Nhập email' {...register('email')} />
+                {errors.email && <p style={styles.errorMessage}>{errors.email.message}</p>}
+              </div>
+
+              <div style={styles.formItem}>
+                <label style={styles.label}>Ngày sinh</label>
+                <DobPicker
+                  value={watchDob}
+                  onChange={(date) => setValue('dob', date || null, { shouldValidate: true })}
+                />
+                {errors.dob && <p style={styles.errorMessage}>{errors.dob.message}</p>}
+              </div>
+
+              <div style={styles.formItem}>
+                <label style={styles.label}>Giới tính</label>
+                <div style={styles.radioGroup}>
+                  <div style={styles.radioItem}>
+                    <input
+                      type='radio'
+                      id='male'
+                      value='male'
+                      checked={watchGender === 'male'}
+                      onChange={() => setValue('gender', 'male')}
+                      style={styles.radioInput}
+                    />
+                    <label htmlFor='male' style={styles.radioLabel}>
+                      Nam
+                    </label>
+                  </div>
+                  <div style={styles.radioItem}>
+                    <input
+                      type='radio'
+                      id='female'
+                      value='female'
+                      checked={watchGender === 'female'}
+                      onChange={() => setValue('gender', 'female')}
+                      style={styles.radioInput}
+                    />
+                    <label htmlFor='female' style={styles.radioLabel}>
+                      Nữ
+                    </label>
+                  </div>
+                  <div style={styles.radioItem}>
+                    <input
+                      type='radio'
+                      id='prefer-not-to-say'
+                      value='prefer-not-to-say'
+                      checked={watchGender === 'prefer-not-to-say'}
+                      onChange={() => setValue('gender', 'prefer-not-to-say')}
+                      style={styles.radioInput}
+                    />
+                    <label htmlFor='prefer-not-to-say' style={styles.radioLabel}>
+                      Bí mật
+                    </label>
+                  </div>
                 </div>
-              </FieldGroup>
-            </TabsContent>
-          </Tabs>
-        </form>
-      </Form>
-      <Dialog open={showOTPDialog} onOpenChange={setShowOTPDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nhập mã OTP</DialogTitle>
-            <DialogDescription>Vui lòng nhập mã OTP đã được gửi đến Zalo của bạn.</DialogDescription>
-          </DialogHeader>
-          <InputOTP value={otp} onChange={setOtp} maxLength={6} pattern={REGEXP_ONLY_DIGITS_AND_CHARS}>
-            <InputOTPGroup>
-              <InputOTPSlot index={0} />
-              <InputOTPSlot index={1} />
-              <InputOTPSlot index={2} />
-              <InputOTPSlot index={3} />
-              <InputOTPSlot index={4} />
-              <InputOTPSlot index={5} />
-            </InputOTPGroup>
-          </InputOTP>
-          <DialogFooter>
-            <Button type='button' onClick={handleConfirmOTP} disabled={isConfirming}>
-              {isConfirming ? 'Đang xác nhận...' : 'Xác nhận'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                {errors.gender && <p style={styles.errorMessage}>{errors.gender.message}</p>}
+              </div>
+
+              <div style={styles.formItem}>
+                <label style={styles.label}>Địa chỉ</label>
+                <input style={styles.input} type='text' placeholder='Nhập địa chỉ' {...register('address')} />
+                {errors.address && <p style={styles.errorMessage}>{errors.address.message}</p>}
+              </div>
+
+              <div style={styles.buttonGrid}>
+                <button
+                  type='button'
+                  style={{ ...styles.buttonOutline, opacity: isSubmitting ? 0.5 : 1 }}
+                  onClick={() => setTab('info')}
+                  disabled={isSubmitting}>
+                  Quay lại
+                </button>
+                <button
+                  type='submit'
+                  style={{ ...styles.button, opacity: isSubmitting ? 0.5 : 1 }}
+                  disabled={isSubmitting}>
+                  {isSubmitting ? 'Đang gửi...' : 'Đăng ký'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </form>
+
+      {/* OTP Dialog */}
+      {showOTPDialog && (
+        <div style={styles.dialogOverlay} onClick={() => setShowOTPDialog(false)}>
+          <div style={styles.dialogContent} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.dialogHeader}>
+              <h2 style={styles.dialogTitle}>Nhập mã OTP</h2>
+              <p style={styles.dialogDescription}>Vui lòng nhập mã OTP đã được gửi đến Zalo của bạn.</p>
+            </div>
+            <div style={styles.otpContainer}>
+              {[0, 1, 2, 3, 4, 5].map((index) => (
+                <input
+                  key={index}
+                  id={`otp-${index}`}
+                  type='text'
+                  maxLength={1}
+                  value={otp[index] || ''}
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                  style={styles.otpInput}
+                />
+              ))}
+            </div>
+            <div style={styles.dialogFooter}>
+              <button
+                type='button'
+                style={{ ...styles.button, width: 'auto', opacity: isConfirming ? 0.5 : 1 }}
+                onClick={handleConfirmOTP}
+                disabled={isConfirming}>
+                {isConfirming ? 'Đang xác nhận...' : 'Xác nhận'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
