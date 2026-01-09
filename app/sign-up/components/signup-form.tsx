@@ -4,27 +4,30 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { set, z } from 'zod';
+import { z } from 'zod'
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
 import {
-    Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle
-} from '@/components/ui/dialog';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Field, FieldGroup } from '@/components/ui/field';
-import {
-    Form, FormControl, FormField, FormItem, FormLabel, FormMessage
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
-import { checkEmail, checkUsername, registry, sendOTP } from '@/services/auth';
-import { cookiesInstance } from '@/services/cookies';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { cn } from '@/lib/utils'
+import { checkEmail, checkUsername, registry, sendOTP } from '@/services/auth'
+import { cookiesInstance } from '@/services/cookies'
+import { zodResolver } from '@hookform/resolvers/zod'
 
-import { DobPicker } from './dob-picker';
+import { DobPicker } from './dob-picker'
 
 const formSchema = z
   .object({
@@ -247,11 +250,8 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
         <form className={cn('flex flex-col gap-6', className)} onSubmit={form.handleSubmit(onSubmit)}>
           <div className='flex flex-col items-center gap-1 text-center'>
             <h1 className='text-2xl font-bold'>Tạo tài khoản của bạn</h1>
-            {/* <p className='text-muted-foreground text-sm text-balance'>
-              Điền vào biểu mẫu bên dưới để tạo tài khoản của bạn
-            </p> */}
           </div>
-          <Tabs defaultValue='info' value={tab} onValueChange={(tab) => { }} className='w-full'>
+          <Tabs defaultValue='info' value={tab} onValueChange={(tab) => {}} className='w-full'>
             <TabsList className='w-full mb-4'>
               <TabsTrigger value='info'>Thông tin đăng nhập</TabsTrigger>
               <TabsTrigger value='verify'>Xác minh</TabsTrigger>
@@ -278,11 +278,11 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                     <FormItem>
                       <FormLabel>Tên đăng nhập</FormLabel>
                       <FormControl>
-                        <Input placeholder='Tên đăng nhập dài 4-32 ký tự chỉ được phép chứa chữ cái hoặc số' {...field} />
+                        <Input
+                          placeholder='Tên đăng nhập dài 4-32 ký tự chỉ được phép chứa chữ cái hoặc số'
+                          {...field}
+                        />
                       </FormControl>
-                      {/* <FormDescription>
-                        {'Tên đăng nhập dài 4-32 ký tự chỉ được phép chứa chữ cái hoặc số.'}
-                      </FormDescription> */}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -295,11 +295,12 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                     <FormItem>
                       <FormLabel>Mật khẩu</FormLabel>
                       <FormControl>
-                        <Input type='password' placeholder='Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt' {...field} />
+                        <Input
+                          type='password'
+                          placeholder='Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt'
+                          {...field}
+                        />
                       </FormControl>
-                      {/* <FormDescription>
-                        Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.
-                      </FormDescription> */}
                       <FormMessage />
                     </FormItem>
                   )}
